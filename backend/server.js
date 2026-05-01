@@ -2,6 +2,8 @@ const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const path = require('path');
+const authMiddleware = require('./middleware/auth');
+const authRoutes = require('./routes/authRoutes');
 const chatRoutes = require('./routes/chatRoutes');
 const fileRoutes = require('./routes/fileRoutes');
 
@@ -20,9 +22,12 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// 路由分发
-app.use('/api/chat', chatRoutes);
-app.use('/api/files', fileRoutes);
+// 认证路由（无需验证）
+app.use('/api/auth', authRoutes);
+
+// 需要认证的路由
+app.use('/api/chat', authMiddleware, chatRoutes);
+app.use('/api/files', authMiddleware, fileRoutes);
 
 // 全局错误处理
 app.use((err, req, res, next) => {
@@ -33,7 +38,7 @@ app.use((err, req, res, next) => {
     });
 });
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
     console.log(`[Open Claw] Server is running on port ${PORT}`);
 });
